@@ -1058,6 +1058,78 @@
     }
 
     .cta-note { margin-top: 16px; font-size: 13px; color: var(--muted); }
+    .cta-note.is-error { color: var(--amber-text); }
+    .cta-note.is-success { color: var(--go); }
+
+    /* ── CTA FORM ── */
+    .cta-form {
+      max-width: 540px;
+      margin: 0 auto;
+      text-align: left;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 32px;
+    }
+    .cta-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+    .field { display: flex; flex-direction: column; gap: 7px; }
+    .field-full { grid-column: 1 / -1; }
+    .field > span {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 500;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      background: rgba(7,8,12,0.4);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      color: var(--white);
+      font-family: var(--font);
+      font-size: 15px;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+    .field textarea { resize: vertical; min-height: 64px; }
+    .field select { cursor: pointer; appearance: none; -webkit-appearance: none; }
+    .field input::placeholder,
+    .field textarea::placeholder { color: var(--muted); }
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      outline: none;
+      border-color: var(--amber);
+      box-shadow: 0 0 0 3px var(--amber-dim);
+      background: rgba(7,8,12,0.6);
+    }
+    .cta-form .btn-primary { width: 100%; justify-content: center; }
+    .cta-form .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+    .cta-form .cta-note { text-align: center; }
+    /* Honeypot — hidden from humans */
+    .hp-field {
+      position: absolute;
+      left: -9999px;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+    @media (max-width: 560px) {
+      .cta-form { padding: 24px 20px; }
+      .cta-form-grid { grid-template-columns: 1fr; }
+    }
 
     /* ── FOOTER ── */
     footer {
@@ -2184,8 +2256,46 @@
     <div class="cta-chip">Limited Availability</div>
     <h2>We take on a limited number of clients.</h2>
     <p class="cta-sub">Book a scoping call and we'll tell you straight whether we can move the needle. No pitch. No pressure. If there's a fit, we'll tell you which function to start with and exactly what to expect.</p>
-    <a href="mailto:zane@flyhire.net?subject=FlyHire%20Scoping%20Call%20Request" class="btn btn-primary btn-xl">Book a Free Scoping Call</a>
-    <p class="cta-note">20 minutes. Free. No commitment required.</p>
+
+    <form id="leadForm" class="cta-form" novalidate>
+      <div class="cta-form-grid">
+        <label class="field">
+          <span>Name</span>
+          <input type="text" name="name" autocomplete="name" required />
+        </label>
+        <label class="field">
+          <span>Email</span>
+          <input type="email" name="email" autocomplete="email" required />
+        </label>
+        <label class="field">
+          <span>Company</span>
+          <input type="text" name="company" autocomplete="organization" />
+        </label>
+        <label class="field">
+          <span>Phone</span>
+          <input type="tel" name="phone" autocomplete="tel" />
+        </label>
+        <label class="field field-full">
+          <span>Monthly revenue</span>
+          <select name="revenue_range">
+            <option value="">Select a range (optional)</option>
+            <option value="Under $10k">Under $10k</option>
+            <option value="$10k–$50k">$10k–$50k</option>
+            <option value="$50k–$250k">$50k–$250k</option>
+            <option value="$250k+">$250k+</option>
+            <option value="Prefer not to say">Prefer not to say</option>
+          </select>
+        </label>
+        <label class="field field-full">
+          <span>What do you need help with?</span>
+          <textarea name="message" rows="3" placeholder="A sentence or two about your situation."></textarea>
+        </label>
+      </div>
+      <!-- Honeypot: hidden from humans, catches bots. -->
+      <input type="text" name="hp" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true" />
+      <button type="submit" class="btn btn-primary btn-xl" id="leadSubmit">Book My Free Call</button>
+      <p class="cta-note" id="leadStatus" role="status">20 minutes. Free. No commitment required.</p>
+    </form>
   </div>
 </section>
 
@@ -2239,6 +2349,69 @@
 </footer>
 
 <script>
+  /* ── CONTACT FORM CONFIG ──
+     Filled in after the Supabase project exists:
+       SUPABASE_FN_URL  = `${project_url}/functions/v1/submit-lead`
+       SUPABASE_ANON_KEY = project anon (publishable) key — safe to expose. */
+  const SUPABASE_FN_URL  = 'https://relbhhyqbzvpnxnbochs.supabase.co/functions/v1/submit-lead';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJlbGJoaHlxYnp2cG54bmJvY2hzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyNjU1MzEsImV4cCI6MjA5Nzg0MTUzMX0._8dU1G2TR9_IUGk_Ea0Vr9gHZS-4rPKxIzIJ4oAZsAw';
+
+  /* ── CONTACT FORM SUBMIT ── */
+  (function () {
+    const form = document.getElementById('leadForm');
+    if (!form) return;
+    const btn = document.getElementById('leadSubmit');
+    const status = document.getElementById('leadStatus');
+    const defaultNote = status.textContent;
+
+    const setStatus = (msg, kind) => {
+      status.textContent = msg;
+      status.classList.remove('is-error', 'is-success');
+      if (kind) status.classList.add('is-' + kind);
+    };
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const data = Object.fromEntries(new FormData(form).entries());
+      if (!data.name || !data.name.trim()) return setStatus('Please enter your name.', 'error');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email || '')) return setStatus('Please enter a valid email.', 'error');
+
+      btn.disabled = true;
+      const label = btn.textContent;
+      btn.textContent = 'Sending…';
+      setStatus('Sending…');
+
+      try {
+        const res = await fetch(SUPABASE_FN_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+          },
+          body: JSON.stringify(data),
+        });
+        const out = await res.json().catch(() => ({}));
+        if (res.ok && out.ok) {
+          form.reset();
+          setStatus("Thanks — we'll be in touch within one business day.", 'success');
+          btn.textContent = 'Request sent ✓';
+          return;
+        }
+        setStatus(out.error || 'Something went wrong. Email zane@flyhire.net and we\'ll sort it out.', 'error');
+      } catch (err) {
+        setStatus('Network error. Please email zane@flyhire.net directly.', 'error');
+      }
+      btn.disabled = false;
+      btn.textContent = label;
+    });
+
+    form.addEventListener('input', () => {
+      if (status.classList.contains('is-error')) setStatus(defaultNote);
+    }, { once: false });
+  })();
+
   /* ── NAV ── */
   const nav = document.getElementById('nav');
   const hamburger = document.getElementById('hamburger');
