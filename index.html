@@ -297,36 +297,6 @@
       pointer-events: none;
     }
 
-    .orb-purple {
-      position: absolute;
-      top: -5%;
-      left: -15%;
-      width: 700px;
-      height: 600px;
-      border-radius: 50%;
-      background: radial-gradient(ellipse at center,
-        rgba(46,144,255,0.18) 0%,
-        transparent 65%
-      );
-      filter: blur(60px);
-      pointer-events: none;
-    }
-
-    .orb-blue {
-      position: absolute;
-      top: 10%;
-      right: -10%;
-      width: 500px;
-      height: 500px;
-      border-radius: 50%;
-      background: radial-gradient(ellipse at center,
-        rgba(46,144,255,0.16) 0%,
-        transparent 65%
-      );
-      filter: blur(60px);
-      pointer-events: none;
-    }
-
     /* Horizon glow line */
     .hero-horizon {
       position: absolute;
@@ -1197,11 +1167,6 @@
       0%, 100% { transform: translateX(-50%) scale(1);    opacity: 1; }
       50%       { transform: translateX(-50%) scale(1.07); opacity: 0.72; }
     }
-    @keyframes orbFloat {
-      0%, 100% { transform: translate(0, 0); }
-      40%       { transform: translate(55px, 30px); }
-      70%       { transform: translate(-30px, -25px); }
-    }
     @keyframes gradientFlow {
       0%   { background-position: 0%   50%; }
       50%  { background-position: 100% 50%; }
@@ -1250,7 +1215,6 @@
 
     /* Ambient orb motion */
     .orb-amber  { animation: orbPulse  9s ease-in-out infinite; }
-    .orb-purple { animation: orbFloat 15s ease-in-out infinite; }
 
     /* Horizon glow pulse */
     .hero-horizon { animation: horizonPulse 4s ease-in-out infinite; }
@@ -1266,8 +1230,8 @@
       position: absolute;
       inset: 0;
       background-image:
-        linear-gradient(rgba(255,255,255,0.032) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.032) 1px, transparent 1px);
+        linear-gradient(rgba(46,144,255,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(46,144,255,0.05) 1px, transparent 1px);
       background-size: 64px 64px;
       -webkit-mask-image: radial-gradient(ellipse 85% 60% at 50% 0%, black 0%, transparent 100%);
       mask-image: radial-gradient(ellipse 85% 60% at 50% 0%, black 0%, transparent 100%);
@@ -1577,6 +1541,8 @@
       .who-split { grid-template-columns: 1fr; gap: 48px; }
 
       .model-pillars { grid-template-columns: 1fr; }
+      .model-bento { grid-template-columns: 1fr; }
+      .pillar-lead { grid-row: auto; }
       .tiers-grid { grid-template-columns: 1fr; max-width: 480px; margin: 0 auto; }
       .steps-grid { grid-template-columns: 1fr 1fr; }
       .includes-inner { grid-template-columns: 1fr; }
@@ -1589,8 +1555,11 @@
       section { padding: 80px 0; }
       .steps-grid { grid-template-columns: 1fr; }
       .footer-top { grid-template-columns: 1fr; gap: 32px; }
-      .hero-mockup { display: none; }
+      /* Show the weekly report on mobile — it's the strongest proof we have */
+      .hero-mockup { padding: 20px 18px 0; }
       .mockup-rows { grid-template-columns: 1fr 1fr; }
+      .mockup-bar-row { flex-direction: column; }
+      .mockup-header { flex-direction: column; align-items: flex-start; gap: 4px; }
     }
 
     @media (max-width: 480px) {
@@ -1631,6 +1600,66 @@
 
     /* Headline italics get the Fraunces soft-display optical size */
     h1 em, h2 em, .hero-sub em { font-style: italic; font-weight: 480; }
+
+    /* ── MODEL BENTO — deliberate hierarchy, not a uniform 3-col grid ── */
+    .model-bento {
+      display: grid;
+      grid-template-columns: 1.45fr 1fr;
+      grid-auto-rows: 1fr;
+      gap: 16px;
+    }
+    .pillar-lead { grid-row: span 2; }
+    .pillar-covers {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 28px;
+    }
+    .pillar-covers span {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.4px;
+      color: var(--blue-text);
+      background: var(--blue-dim);
+      border: 1px solid rgba(46,144,255,0.22);
+      padding: 5px 12px;
+      border-radius: 100px;
+    }
+
+    /* ── FOUNDER ATTRIBUTION on the pull-quote — a real, named position ── */
+    .quote-author {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 22px;
+    }
+    .author-photo {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: center 28%;
+      border: 1px solid var(--glass-border-hover);
+    }
+    .author-meta { display: flex; flex-direction: column; line-height: 1.3; }
+    .author-name { color: var(--white); font-weight: 600; font-size: 14px; font-style: normal; }
+    .author-role {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.4px;
+      color: var(--muted);
+      font-style: normal;
+    }
+
+    /* ── CRAFT: visible keyboard focus + tactile press ── */
+    a:focus-visible, button:focus-visible, .btn:focus-visible,
+    .tier-btn:focus-visible, .v-tag:focus-visible {
+      outline: 2px solid var(--blue-text);
+      outline-offset: 3px;
+      border-radius: 6px;
+    }
+    .tier-btn:active, .nav-cta:active, .hero-badge { -webkit-tap-highlight-color: transparent; }
+    .tier-btn:active { transform: translateY(1px); }
 
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
@@ -1678,14 +1707,12 @@
 <section id="hero">
   <div class="hero-grid"></div>
   <div class="orb-amber"></div>
-  <div class="orb-purple"></div>
-  <div class="orb-blue"></div>
   <div class="hero-horizon"></div>
 
   <div class="container">
     <div class="hero-badge">
       <span class="hero-badge-dot"></span>
-      AI-Augmented Managed Operations
+      Now onboarding U.S. owners · live in 7–14 days
     </div>
     <h1>We build and <em>run</em> the operations layer your business is missing.</h1>
     <p class="hero-sub">Appointment setting, CRM, inbox, follow-ups, reporting — done for you, AI-augmented, SLA in writing. Go live in 7–14 days.</p>
@@ -1774,6 +1801,13 @@
         <p style="margin-top:16px;">You're doing $15/hr work on a $500/hr schedule. Every hour spent in the inbox, chasing follow-ups, or updating the CRM is an hour not spent closing, leading, or building. Adding full-time staff breaks the model. Handing the function off doesn't.</p>
         <div class="problem-quote">
           <p>"The highest-paid person in the business shouldn't be the one running the inbox."</p>
+          <div class="quote-author">
+            <img src="assets/zane-founder.jpg" alt="Zane Haug, Founder of FlyHire Connections" class="author-photo" />
+            <div class="author-meta">
+              <span class="author-name">Zane Haug</span>
+              <span class="author-role">Founder, FlyHire Connections</span>
+            </div>
+          </div>
         </div>
       </div>
       <div class="problem-right">
@@ -1804,27 +1838,30 @@
       <h2>Buy the outcome.<br>Not the headcount.</h2>
       <p>One flat monthly fee. One weekly report. One point of accountability. FlyHire owns sourcing, training, QA, systems, and management. You own your business. We run the function.</p>
     </div>
-    <div class="model-pillars">
-      <div class="glass-card pillar">
+    <div class="model-bento">
+      <div class="glass-card pillar pillar-lead">
         <div class="pillar-icon-wrap blue">
           <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
         </div>
         <h3>One flat monthly fee</h3>
-        <p>No per-seat pricing. No surprise invoices. One number covers sourcing, training, management, QA, and tools. The function runs. You pay one bill.</p>
+        <p>No per-seat pricing. No surprise invoices. One number runs the whole function — and you pay one bill.</p>
+        <div class="pillar-covers">
+          <span>Sourcing</span><span>Training</span><span>Management</span><span>QA</span><span>Tools</span>
+        </div>
       </div>
       <div class="glass-card pillar">
         <div class="pillar-icon-wrap amber">
           <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
         </div>
         <h3>One weekly report</h3>
-        <p>Every Friday. Committed deliverables tracked against what we promised. Numbers, output, and flags — on paper, every week. If it's not in the report, it didn't happen.</p>
+        <p>Every Friday: committed deliverables, tracked against what we promised. If it's not in the report, it didn't happen.</p>
       </div>
       <div class="glass-card pillar">
-        <div class="pillar-icon-wrap purple">
+        <div class="pillar-icon-wrap blue">
           <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         </div>
         <h3>One SLA in writing</h3>
-        <p>Deliverables written into the agreement. Not a handshake — a contract. If we don't hit the SLA, you walk. No penalty. No argument. We carry the risk.</p>
+        <p>A contract, not a handshake. Miss the SLA and you walk — no penalty, no argument. We carry the risk.</p>
       </div>
     </div>
   </div>
