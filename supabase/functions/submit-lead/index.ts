@@ -12,14 +12,14 @@
 //   SUPABASE_SERVICE_ROLE_KEY
 //
 // Optional secrets (have sensible defaults):
-//   FROM_EMAIL              – default "FlyHire Connections <hello@flyhire.net>"
-//   NOTIFY_EMAIL            – default "zane@flyhire.net"
+//   FROM_EMAIL              – default "FlyHire Connections <hello@flyhireconnect.com>"
+//   NOTIFY_EMAIL            – default "info@flyhireconnect.com"
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
-const FROM_EMAIL = Deno.env.get("FROM_EMAIL") ?? "FlyHire Connections <hello@flyhire.net>";
-const NOTIFY_EMAIL = Deno.env.get("NOTIFY_EMAIL") ?? "zane@flyhire.net";
+const FROM_EMAIL = Deno.env.get("FROM_EMAIL") ?? "FlyHire Connections <hello@flyhireconnect.com>";
+const NOTIFY_EMAIL = Deno.env.get("NOTIFY_EMAIL") ?? "info@flyhireconnect.com";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
