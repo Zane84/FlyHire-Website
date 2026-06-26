@@ -71,20 +71,39 @@
     header.bar .brand { font-family: var(--display); font-weight: 500; color: var(--white); font-size: 20px; }
     header.bar .brand span { color: var(--accent); }
     header.bar .who { font-size: 13px; display: flex; align-items: center; gap: 14px; }
-    main { max-width: 1180px; margin: 0 auto; padding: 28px; display: grid; grid-template-columns: 280px 1fr; gap: 28px; align-items: start; }
-    @media (max-width: 880px) { main { grid-template-columns: 1fr; } }
+    main { max-width: 940px; margin: 0 auto; padding: 28px; }
+    .view { animation: fade .2s ease; }
+    @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+
+    /* Top nav */
+    .nav { display: flex; gap: 4px; background: rgba(7,12,24,0.5); padding: 4px; border-radius: 10px; }
+    .navbtn { padding: 8px 16px; border-radius: 7px; font-size: 13px; font-weight: 600; color: var(--text); background: transparent; border: none; }
+    .navbtn:hover { color: var(--white); background: transparent; }
+    .navbtn.active { background: var(--accent-soft); color: var(--white); }
+    @media (max-width: 760px) {
+      header.bar { flex-wrap: wrap; gap: 12px; }
+      .nav { order: 3; width: 100%; }
+      .navbtn { flex: 1; text-align: center; }
+    }
+
+    /* Content / blog card grids */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 16px; }
+    .pcard { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+    .pcard:hover { border-color: var(--border-hover); }
+    .pc-title { color: var(--white); font-size: 16px; font-weight: 500; font-family: var(--display); cursor: pointer; line-height: 1.25; }
+    .pc-title:hover { color: var(--accent); }
+    .pc-meta { display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+    .pc-excerpt { font-size: 13px; color: var(--text); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .pc-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; align-items: center; }
+    .pc-actions button, .pc-actions a { font-size: 12px; padding: 6px 10px; }
+    .badge { font-family: var(--mono); font-size: 10px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); }
+    .badge.live { color: var(--go); border-color: rgba(95,208,139,0.4); }
+    .btn-danger { color: #ff8b8b; border-color: rgba(255,107,107,0.3); }
+    .btn-danger:hover { color: #ff8b8b; border-color: #ff6b6b; background: rgba(255,107,107,0.10); }
+    .empty { grid-column: 1 / -1; text-align: center; color: var(--muted); font-size: 14px; padding: 36px 0; }
 
     .section-title { font-family: var(--display); color: var(--white); font-size: 22px; font-weight: 500; margin-bottom: 4px; }
     .hint { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
-
-    /* Sidebar history */
-    aside { position: sticky; top: 92px; }
-    .hist { display: flex; flex-direction: column; gap: 8px; max-height: 70vh; overflow-y: auto; }
-    .hist-item { text-align: left; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--panel); cursor: pointer; }
-    .hist-item:hover { border-color: var(--border-hover); }
-    .hist-item.active { border-color: var(--accent); background: var(--accent-soft); }
-    .hist-item .t { color: var(--white); font-size: 14px; font-weight: 600; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .hist-item .d { font-size: 11px; color: var(--muted); font-family: var(--mono); }
 
     /* Input card */
     .block { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 22px; }
@@ -92,6 +111,16 @@
     .tab { padding: 7px 14px; border-radius: 7px; font-size: 13px; font-weight: 600; color: var(--text); background: transparent; border: none; }
     .tab.active { background: var(--accent-soft); color: var(--white); }
     .row-actions { display: flex; gap: 10px; align-items: center; margin-top: 14px; }
+
+    /* Voice dictation */
+    .mic-row { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+    .mic-btn { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; padding: 8px 14px; }
+    .mic-btn svg { display: block; }
+    .mic-btn.recording { border-color: #ff6b6b; color: #ff8b8b; background: rgba(255,107,107,0.10); }
+    .mic-btn.recording svg { animation: micpulse 1.1s ease-in-out infinite; }
+    @keyframes micpulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+    .mic-interim { font-size: 13px; color: var(--muted); font-style: italic; flex: 1; min-width: 0; }
+
     .spinner { width: 16px; height: 16px; border: 2px solid var(--accent-soft); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; display: inline-block; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -141,6 +170,11 @@
   <div id="app" class="hidden">
     <header class="bar">
       <div class="brand">FlyHire <span>Studio</span></div>
+      <nav class="nav" id="nav">
+        <button class="navbtn active" data-view="create">Create content</button>
+        <button class="navbtn" data-view="content">Our content</button>
+        <button class="navbtn" data-view="blogs">Our blogs</button>
+      </nav>
       <div class="who">
         <span id="who-email" class="mono"></span>
         <button class="ghost" id="signout">Sign out</button>
@@ -148,12 +182,8 @@
     </header>
 
     <main>
-      <aside>
-        <div class="mono" style="margin-bottom:10px">History</div>
-        <div class="hist" id="history"><div class="hint">Nothing yet.</div></div>
-      </aside>
-
-      <section>
+      <!-- VIEW: CREATE CONTENT -->
+      <section id="view-create" class="view">
         <!-- INPUT -->
         <div class="block">
           <div class="section-title">New content</div>
@@ -164,6 +194,13 @@
           </div>
           <div id="in-braindump">
             <textarea id="braindump" rows="6" placeholder="Talk it out — an idea, a lesson, a client story, a hot take…"></textarea>
+            <div class="mic-row">
+              <button type="button" class="mic-btn" id="mic-btn" title="Dictate with your microphone">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+                <span id="mic-label">Dictate</span>
+              </button>
+              <span id="mic-interim" class="mic-interim"></span>
+            </div>
           </div>
           <div id="in-youtube" class="hidden">
             <input type="url" id="yturl" placeholder="https://www.youtube.com/watch?v=…" />
@@ -233,6 +270,20 @@
           </div>
         </div>
       </section>
+
+      <!-- VIEW: OUR CONTENT -->
+      <section id="view-content" class="view hidden">
+        <div class="section-title">Our content</div>
+        <p class="hint">Everything you've generated — drafts and published. Click a title to open and edit it.</p>
+        <div class="grid" id="content-grid"></div>
+      </section>
+
+      <!-- VIEW: OUR BLOGS -->
+      <section id="view-blogs" class="view hidden">
+        <div class="section-title">Our blogs</div>
+        <p class="hint">Posts that are live on <strong>flyhireconnect.com/blog</strong>. Unpublish hides one from the site (keeps the draft); Delete removes it for good.</p>
+        <div class="grid" id="blogs-grid"></div>
+      </section>
     </main>
   </div>
 
@@ -272,7 +323,7 @@
       $("who-email").textContent = email;
       gate.classList.add("hidden");
       app.classList.remove("hidden");
-      loadHistory();
+      loadPieces();
     }
     function showGate(msg, signedIn = false) {
       app.classList.add("hidden");
@@ -294,6 +345,16 @@
     $("signout").onclick = async () => { await sb.auth.signOut(); showGate(); };
     sb.auth.onAuthStateChange(() => refreshAuth());
 
+    // ---- Top-nav view switching --------------------------------------------
+    function showView(name) {
+      document.querySelectorAll(".view").forEach((v) => v.classList.add("hidden"));
+      $("view-" + name).classList.remove("hidden");
+      document.querySelectorAll(".navbtn").forEach((b) => b.classList.toggle("active", b.dataset.view === name));
+      if (name === "content" || name === "blogs") loadPieces();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    document.querySelectorAll(".navbtn").forEach((b) => { b.onclick = () => showView(b.dataset.view); });
+
     // ---- Input tabs ---------------------------------------------------------
     document.querySelectorAll(".tab").forEach((t) => {
       t.onclick = () => {
@@ -301,8 +362,70 @@
         document.querySelectorAll(".tab").forEach((x) => x.classList.toggle("active", x === t));
         $("in-braindump").classList.toggle("hidden", mode !== "braindump");
         $("in-youtube").classList.toggle("hidden", mode !== "youtube");
+        if (mode !== "braindump") stopDictation();   // don't keep listening on the YouTube tab
       };
     });
+
+    // ---- Voice dictation (browser Web Speech API — no key, runs locally) ----
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const micBtn = $("mic-btn");
+    let recog = null, recording = false;
+
+    if (!SR) {
+      micBtn.style.display = "none";   // Safari/Firefox: hide rather than offer a dead button
+    } else {
+      micBtn.onclick = () => (recording ? stopDictation() : startDictation());
+    }
+
+    function appendDictation(text) {
+      const ta = $("braindump");
+      const sep = ta.value && !/\s$/.test(ta.value) ? " " : "";
+      ta.value += sep + text.trim();
+    }
+
+    function startDictation() {
+      recog = new SR();
+      recog.lang = "en-US";
+      recog.continuous = true;
+      recog.interimResults = true;
+      recog.onresult = (e) => {
+        let interim = "";
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          const r = e.results[i];
+          if (r.isFinal) appendDictation(r[0].transcript);
+          else interim += r[0].transcript;
+        }
+        $("mic-interim").textContent = interim;
+      };
+      recog.onerror = (e) => {
+        if (["not-allowed", "service-not-allowed"].includes(e.error)) {
+          toast("Mic permission blocked — allow it in the address bar.");
+          stopDictation();
+        } else if (e.error === "audio-capture") {
+          toast("No microphone found.");
+          stopDictation();
+        }
+      };
+      recog.onend = () => {
+        // Chrome ends the session after a pause; restart while the user's still recording.
+        if (recording) { try { recog.start(); } catch {} }
+        else setRecUI(false);
+      };
+      try { recog.start(); recording = true; setRecUI(true); }
+      catch { toast("Couldn't start the mic."); }
+    }
+
+    function stopDictation() {
+      recording = false;
+      $("mic-interim").textContent = "";
+      if (recog) { try { recog.stop(); } catch {} }
+      setRecUI(false);
+    }
+
+    function setRecUI(on) {
+      micBtn.classList.toggle("recording", on);
+      $("mic-label").textContent = on ? "Stop" : "Dictate";
+    }
 
     // ---- Generate -----------------------------------------------------------
     $("generate").onclick = async () => {
@@ -331,7 +454,7 @@
         }
         if (!data?.ok) throw new Error(data?.error || "Generation failed.");
         loadPiece(data.piece);
-        loadHistory();
+        loadPieces();
         toast("Drafts ready.");
       } catch (e) {
         toast(e.message || "Something went wrong.");
@@ -352,7 +475,7 @@
       showBlogEdit();
       renderThread(Array.isArray(p.twitter_thread) ? p.twitter_thread : []);
       renderActions(p);
-      markActiveHistory();
+      showView("create");
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
@@ -402,7 +525,7 @@
       const note = $("saved-note"); note.classList.remove("hidden");
       setTimeout(() => note.classList.add("hidden"), 1600);
       if (currentPiece) currentPiece.title = $("f-title").value.trim() || null;
-      loadHistory();
+      loadPieces();
     };
 
     // ---- Copy buttons -------------------------------------------------------
@@ -475,7 +598,7 @@
       if (error) { toast("Publish failed: " + error.message); return; }
       toast("Published.");
       await openPiece(currentId);
-      loadHistory();
+      loadPieces();
     };
 
     $("unpublish-btn").onclick = async () => {
@@ -484,7 +607,7 @@
       if (error) { toast("Failed: " + error.message); return; }
       toast("Unpublished.");
       await openPiece(currentId);
-      loadHistory();
+      loadPieces();
     };
 
     $("postx-btn").onclick = async () => {
@@ -513,28 +636,121 @@
       }
     };
 
-    // ---- History ------------------------------------------------------------
-    async function loadHistory() {
+    // ---- Content + blog listings -------------------------------------------
+    let allPieces = [];
+
+    async function loadPieces() {
       const { data, error } = await sb.from("content_pieces")
-        .select("id,title,created_at,status").order("created_at", { ascending: false }).limit(50);
-      const wrap = $("history");
-      if (error) { wrap.innerHTML = `<div class="hint">${error.message}</div>`; return; }
-      if (!data.length) { wrap.innerHTML = '<div class="hint">Nothing yet.</div>'; return; }
-      wrap.innerHTML = "";
-      data.forEach((p) => {
-        const el = document.createElement("button");
-        el.className = "hist-item" + (p.id === currentId ? " active" : "");
-        el.dataset.id = p.id;
-        const date = new Date(p.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric" });
-        el.innerHTML = `<span class="t">${(p.title || "Untitled").replace(/</g,"&lt;")}</span><span class="d">${date}${p.status === "published" ? " · live" : ""}</span>`;
-        el.onclick = () => openPiece(p.id);
-        wrap.appendChild(el);
-      });
+        .select("id,title,blog_excerpt,created_at,blog_published_at,status,blog_slug,twitter_posted_at")
+        .order("created_at", { ascending: false }).limit(200);
+      if (error) {
+        const msg = `<div class="empty">${error.message}</div>`;
+        $("content-grid").innerHTML = msg; $("blogs-grid").innerHTML = msg; return;
+      }
+      allPieces = data || [];
+      renderContentGrid();
+      renderBlogsGrid();
     }
-    function markActiveHistory() {
-      document.querySelectorAll(".hist-item").forEach((el) =>
-        el.classList.toggle("active", el.dataset.id === currentId));
+
+    function renderContentGrid() {
+      const g = $("content-grid"); g.innerHTML = "";
+      if (!allPieces.length) {
+        g.innerHTML = '<div class="empty">Nothing yet — head to Create content and generate your first piece.</div>'; return;
+      }
+      allPieces.forEach((p) => g.appendChild(pieceCard(p, "content")));
     }
+
+    function renderBlogsGrid() {
+      const g = $("blogs-grid"); g.innerHTML = "";
+      const blogs = allPieces.filter((p) => p.status === "published" && p.blog_slug);
+      if (!blogs.length) {
+        g.innerHTML = '<div class="empty">No published posts yet. Open a draft and hit “Publish to blog”.</div>'; return;
+      }
+      blogs.forEach((p) => g.appendChild(pieceCard(p, "blogs")));
+    }
+
+    // Build a content/blog card. textContent everywhere — titles are never trusted as HTML.
+    function pieceCard(p, view) {
+      const card = document.createElement("div");
+      card.className = "pcard";
+
+      const title = document.createElement("div");
+      title.className = "pc-title";
+      title.textContent = p.title || "Untitled";
+      title.onclick = () => openPiece(p.id);
+      card.appendChild(title);
+
+      const meta = document.createElement("div");
+      meta.className = "pc-meta";
+      const dateEl = document.createElement("span");
+      dateEl.textContent = new Date(p.blog_published_at || p.created_at)
+        .toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+      meta.appendChild(dateEl);
+      const published = p.status === "published" && p.blog_slug;
+      const badge = document.createElement("span");
+      badge.className = "badge" + (published ? " live" : "");
+      badge.textContent = published ? "Live" : "Draft";
+      meta.appendChild(badge);
+      if (p.twitter_posted_at) {
+        const x = document.createElement("span"); x.className = "badge"; x.textContent = "X ✓"; meta.appendChild(x);
+      }
+      card.appendChild(meta);
+
+      if (p.blog_excerpt) {
+        const ex = document.createElement("div");
+        ex.className = "pc-excerpt"; ex.textContent = p.blog_excerpt;
+        card.appendChild(ex);
+      }
+
+      const actions = document.createElement("div");
+      actions.className = "pc-actions";
+
+      const edit = document.createElement("button");
+      edit.textContent = view === "blogs" ? "Edit" : "Open";
+      edit.onclick = () => openPiece(p.id);
+      actions.appendChild(edit);
+
+      if (view === "blogs" && published) {
+        const live = document.createElement("a");
+        live.href = "/blog/post.html?slug=" + encodeURIComponent(p.blog_slug);
+        live.target = "_blank"; live.rel = "noopener";
+        live.className = "ghost-link"; live.textContent = "View live ↗";
+        actions.appendChild(live);
+
+        const unp = document.createElement("button");
+        unp.textContent = "Unpublish";
+        unp.onclick = () => unpublishPiece(p.id);
+        actions.appendChild(unp);
+      }
+
+      const del = document.createElement("button");
+      del.className = "btn-danger";
+      del.textContent = "Delete";
+      del.onclick = () => deletePiece(p.id, p.title);
+      actions.appendChild(del);
+
+      card.appendChild(actions);
+      return card;
+    }
+
+    async function deletePiece(id, label) {
+      const name = label ? `“${label}”` : "this piece";
+      if (!confirm(`Delete ${name}? This removes it everywhere — including the live blog if it's published. Can't be undone.`)) return;
+      const { error } = await sb.from("content_pieces").delete().eq("id", id);
+      if (error) { toast("Delete failed: " + error.message); return; }
+      if (currentId === id) { currentId = null; currentPiece = null; $("output").classList.add("hidden"); }
+      toast("Deleted.");
+      loadPieces();
+    }
+
+    async function unpublishPiece(id) {
+      const { error } = await sb.from("content_pieces").update({ status: "draft" }).eq("id", id);
+      if (error) { toast("Unpublish failed: " + error.message); return; }
+      toast("Unpublished.");
+      if (currentId === id) await openPiece(id);
+      loadPieces();
+    }
+
     async function openPiece(id) {
       const { data, error } = await sb.from("content_pieces").select("*").eq("id", id).single();
       if (error) { toast(error.message); return; }
