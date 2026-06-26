@@ -51,7 +51,7 @@ async function fetchYoutubeTranscript(url: string): Promise<string> {
   if (!res.ok) {
     const detail = await res.text();
     console.error("Transcript API error", res.status, detail);
-    throw new Error("Couldn't fetch a transcript for that video (it may have captions disabled).");
+    throw new Error(`Transcript error ${res.status}: ${detail.slice(0, 300)}`);
   }
   const data = await res.json();
   // Supadata returns { content: "..." } with text=true, or an array of segments.
@@ -118,7 +118,7 @@ async function generateDrafts(sourceText: string) {
   if (!res.ok) {
     const detail = await res.text();
     console.error("Anthropic error", res.status, detail);
-    throw new Error("The AI generation step failed. Please try again.");
+    throw new Error(`AI error ${res.status}: ${detail.slice(0, 400)}`);
   }
 
   const data = await res.json();
