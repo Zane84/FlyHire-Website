@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FlyHire Connections — Blog</title>
+  <meta name="description" id="meta-desc" content="FlyHire Connections blog." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #070C18; --accent: #2E90FF; --blue-text: #6FB4FF; --amber: #E8912A;
+      --glass: rgba(224,236,255,0.04); --glass-border: rgba(224,236,255,0.10);
+      --white: #EAF0FA; --text: #93A1BC; --muted: #56617C;
+      --font: 'Inter', system-ui, sans-serif; --display: 'Fraunces', Georgia, serif; --mono: 'IBM Plex Mono', monospace;
+      --max: 720px; --nav-h: 68px;
+    }
+    body { background: var(--bg); color: var(--text); font-family: var(--font); line-height: 1.7; -webkit-font-smoothing: antialiased; }
+    a { color: var(--accent); }
+    nav { height: var(--nav-h); border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; background: rgba(7,12,24,0.85); backdrop-filter: blur(10px); z-index: 10; }
+    .nav-inner { max-width: var(--max); margin: 0 auto; height: 100%; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; }
+    .nav-inner img { height: 42px; }
+    .nav-inner .back { font-size: 14px; color: var(--text); }
+    .nav-inner .back:hover { color: var(--white); }
+    main { max-width: var(--max); margin: 0 auto; padding: 64px 24px 120px; }
+    .date { font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; }
+    h1.title { font-family: var(--display); font-weight: 500; color: var(--white); font-size: clamp(32px, 5.5vw, 48px); line-height: 1.08; margin-bottom: 32px; }
+    article { font-size: 18px; }
+    article h2 { font-family: var(--display); font-weight: 500; color: var(--white); font-size: 28px; margin: 40px 0 14px; line-height: 1.2; }
+    article h3 { font-family: var(--display); font-weight: 500; color: var(--white); font-size: 22px; margin: 32px 0 12px; }
+    article p { margin: 0 0 20px; }
+    article ul, article ol { margin: 0 0 20px; padding-left: 24px; }
+    article li { margin-bottom: 8px; }
+    article a { text-decoration: underline; text-underline-offset: 2px; }
+    article strong { color: var(--white); }
+    article blockquote { border-left: 3px solid var(--accent); padding: 4px 0 4px 20px; margin: 0 0 24px; color: var(--white); font-style: italic; }
+    article code { font-family: var(--mono); font-size: 0.88em; background: var(--glass); padding: 2px 6px; border-radius: 6px; }
+    article pre { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 10px; padding: 16px; overflow-x: auto; margin: 0 0 24px; }
+    article pre code { background: none; padding: 0; }
+    article hr { border: none; border-top: 1px solid var(--glass-border); margin: 40px 0; }
+    article img { max-width: 100%; border-radius: 10px; }
+    .cta-end { margin-top: 56px; padding: 28px; border: 1px solid var(--glass-border); border-radius: 14px; background: var(--glass); }
+    .cta-end p { margin-bottom: 14px; color: var(--white); font-size: 16px; }
+    .btn { display: inline-block; background: var(--accent); color: #03101f; font-weight: 600; padding: 11px 20px; border-radius: 100px; text-decoration: none; }
+    .state { padding: 60px 0; color: var(--muted); text-align: center; }
+    footer { border-top: 1px solid var(--glass-border); padding: 40px 24px; text-align: center; font-size: 13px; color: var(--muted); }
+    footer a { color: var(--text); }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-inner">
+      <a href="/"><img src="/assets/FlyHire Logo Dark.png" alt="FlyHire Connections" /></a>
+      <a href="/blog/" class="back">← All posts</a>
+    </div>
+  </nav>
+
+  <main id="main">
+    <div class="state" id="state">Loading…</div>
+  </main>
+
+  <footer>
+    <p>FlyHire Connections — managed offshore operations for U.S. small businesses. <a href="/blog/">More posts</a> · <a href="/">Home</a></p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+    const sb = createClient(
+      "https://relbhhyqbzvpnxnbochs.supabase.co",
+      "sb_publishable_AG6gO-tQyKMpWMio286SnQ_8GZ3JNe7"
+    );
+    const main = document.getElementById("main");
+    const fmt = (d) => new Date(d).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+    const esc = (s) => (s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+    const slug = new URLSearchParams(location.search).get("slug");
+    (async () => {
+      if (!slug) { main.innerHTML = `<div class="state">Post not found. <a href="/blog/">Back to the blog →</a></div>`; return; }
+      const { data, error } = await sb
+        .from("public_posts")
+        .select("title,blog_excerpt,blog_post,blog_published_at")
+        .eq("blog_slug", slug)
+        .maybeSingle();
+      if (error || !data) { main.innerHTML = `<div class="state">That post isn't available. <a href="/blog/">Back to the blog →</a></div>`; return; }
+
+      document.title = `${data.title || "Blog"} — FlyHire Connections`;
+      if (data.blog_excerpt) document.getElementById("meta-desc").setAttribute("content", data.blog_excerpt);
+
+      const html = DOMPurify.sanitize(marked.parse(data.blog_post || ""));
+      main.innerHTML = `
+        <div class="date">${data.blog_published_at ? fmt(data.blog_published_at) : ""}</div>
+        <h1 class="title">${esc(data.title) || "Untitled"}</h1>
+        <article>${html}</article>
+        <div class="cta-end">
+          <p>Want this kind of operational rigor running in your business?</p>
+          <a class="btn" href="/#cta">Book a scoping call →</a>
+        </div>`;
+    })();
+  </script>
+</body>
+</html>

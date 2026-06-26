@@ -93,7 +93,10 @@ You will be given a source (a transcript or a raw brain-dump). Turn its IDEAS in
 
 Stay faithful to the source's substance; do not invent statistics. Write in FlyHire's voice. Return ONLY the structured object.`;
 
-async function generateDrafts(sourceText: string) {
+async function generateDrafts(sourceText: string, guidance: string) {
+  const guidanceBlock = guidance
+    ? `\n\nExtra guidance from the author for this piece (follow it):\n<guidance>\n${guidance}\n</guidance>`
+    : "";
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -109,7 +112,7 @@ async function generateDrafts(sourceText: string) {
       messages: [
         {
           role: "user",
-          content: `Here is the source material. Produce the three pieces of content from it.\n\n<source>\n${sourceText}\n</source>`,
+          content: `Here is the source material. Produce the three pieces of content from it.\n\n<source>\n${sourceText}\n</source>${guidanceBlock}`,
         },
       ],
     }),
@@ -170,6 +173,7 @@ Deno.serve(async (req) => {
   const sourceType = (body.source_type ?? "").trim();
   const sourceUrl = (body.source_url ?? "").trim();
   const rawText = (body.source_text ?? "").trim();
+  const guidance = (body.guidance ?? "").trim().slice(0, 1000);
 
   if (sourceType !== "youtube" && sourceType !== "braindump") {
     return json({ ok: false, error: "source_type must be 'youtube' or 'braindump'." }, 400);
@@ -191,7 +195,7 @@ Deno.serve(async (req) => {
   // --- Generate -------------------------------------------------------------
   let drafts: any;
   try {
-    drafts = await generateDrafts(sourceText);
+    drafts = await generateDrafts(sourceText, guidance);
   } catch (e) {
     return json({ ok: false, error: (e as Error).message }, 502);
   }

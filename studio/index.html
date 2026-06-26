@@ -107,6 +107,16 @@
     .field { margin-bottom: 14px; }
     .field label { display: block; margin-bottom: 6px; }
     .save-bar { position: sticky; bottom: 0; background: rgba(7,12,24,0.92); backdrop-filter: blur(8px); border-top: 1px solid var(--border); padding: 14px 0; display: flex; gap: 12px; align-items: center; margin-top: 8px; }
+    .md-preview { border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; background: rgba(7,12,24,0.4); font-size: 15px; line-height: 1.7; }
+    .md-preview h1, .md-preview h2, .md-preview h3 { font-family: var(--display); color: var(--white); margin: 18px 0 8px; line-height: 1.2; }
+    .md-preview h2 { font-size: 22px; } .md-preview h3 { font-size: 18px; }
+    .md-preview p { margin: 0 0 12px; } .md-preview ul, .md-preview ol { margin: 0 0 12px 20px; }
+    .md-preview strong { color: var(--white); }
+    .md-preview blockquote { border-left: 3px solid var(--accent); padding-left: 14px; color: var(--white); margin: 0 0 12px; }
+    .md-preview code { font-family: var(--mono); font-size: .9em; background: rgba(224,236,255,0.06); padding: 2px 5px; border-radius: 5px; }
+    .ghost-link { font-size: 13px; color: var(--accent); align-self: center; text-decoration: none; }
+    .ghost-link:hover { text-decoration: underline; }
+    .out-head .actions { display: flex; gap: 8px; }
     .saved-note { font-size: 13px; color: var(--go); }
     .hidden { display: none !important; }
     .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--panel-2); border: 1px solid var(--border-hover); color: var(--white); padding: 10px 16px; border-radius: 10px; font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; }
@@ -158,6 +168,10 @@
           <div id="in-youtube" class="hidden">
             <input type="url" id="yturl" placeholder="https://www.youtube.com/watch?v=…" />
           </div>
+          <div class="field" style="margin-top:14px">
+            <label class="mono">Guidance — optional</label>
+            <input type="text" id="guidance" placeholder="e.g. punchier, lead with the client result, target small law firms…" />
+          </div>
           <div class="row-actions">
             <button class="primary" id="generate">Generate</button>
             <span id="gen-status" class="hint" style="margin:0"></span>
@@ -181,14 +195,36 @@
           </div>
 
           <div class="block">
-            <div class="out-head"><h3>Blog post <span class="tag">markdown</span></h3><button class="copy" data-copy="f-blog">Copy</button></div>
+            <div class="out-head">
+              <h3>Blog post <span class="tag">markdown</span></h3>
+              <div class="actions">
+                <button class="copy" id="blog-toggle">Preview</button>
+                <button class="copy" data-copy="f-blog">Copy</button>
+              </div>
+            </div>
             <textarea id="f-blog" rows="16"></textarea>
+            <div id="blog-preview" class="md-preview hidden"></div>
           </div>
 
           <div class="block">
             <div class="out-head"><h3>Twitter / X thread</h3><button class="copy" id="copy-thread">Copy all</button></div>
             <div id="thread"></div>
             <div class="tweet-actions"><button class="ghost" id="add-tweet">+ Add tweet</button></div>
+          </div>
+
+          <div class="block" id="publish-block">
+            <div class="out-head"><h3>Publish</h3><span id="pub-status" class="tag">Draft</span></div>
+            <div class="row-actions" style="flex-wrap:wrap">
+              <button class="primary" id="publish-btn">Publish to blog</button>
+              <a id="view-live" class="ghost-link hidden" target="_blank" rel="noopener">View live ↗</a>
+              <button class="ghost" id="unpublish-btn" style="display:none">Unpublish</button>
+            </div>
+            <div class="row-actions" style="flex-wrap:wrap;margin-top:12px">
+              <button id="postx-btn">Post thread to X</button>
+              <a id="view-x" class="ghost-link hidden" target="_blank" rel="noopener">View on X ↗</a>
+              <span id="x-status" class="hint" style="margin:0"></span>
+            </div>
+            <p class="hint" style="margin-top:10px">Publishing puts the blog post live at <strong>flyhireconnect.com/blog</strong> (saves your edits too). Posting the thread sends it to X — one click, can't be undone.</p>
           </div>
 
           <div class="save-bar">
@@ -202,6 +238,8 @@
 
   <div class="toast" id="toast"></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
   <script type="module">
     import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -214,6 +252,7 @@
     const $ = (id) => document.getElementById(id);
     const gate = $("gate"), app = $("app");
     let currentId = null;   // the content_pieces row being edited
+    let currentPiece = null;
     let mode = "braindump";
 
     function toast(msg) {
@@ -278,6 +317,8 @@
         if (!text) { toast("Write something first."); return; }
         payload.source_text = text;
       }
+      const guidance = $("guidance").value.trim();
+      if (guidance) payload.guidance = guidance;
       btn.disabled = true;
       status.innerHTML = '<span class="spinner"></span> Generating… this can take ~20–40s';
       try {
@@ -302,12 +343,15 @@
     // ---- Load a piece into the editor --------------------------------------
     function loadPiece(p) {
       currentId = p.id;
+      currentPiece = p;
       $("output").classList.remove("hidden");
       $("f-title").value = p.title ?? "";
       $("f-excerpt").value = p.blog_excerpt ?? "";
       $("f-linkedin").value = p.linkedin_post ?? "";
       $("f-blog").value = p.blog_post ?? "";
+      showBlogEdit();
       renderThread(Array.isArray(p.twitter_thread) ? p.twitter_thread : []);
+      renderActions(p);
       markActiveHistory();
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -340,20 +384,24 @@
     }
 
     // ---- Save ---------------------------------------------------------------
-    $("save").onclick = async () => {
-      if (!currentId) return;
-      const btn = $("save"); btn.disabled = true;
-      const { error } = await sb.from("content_pieces").update({
+    async function saveEdits() {
+      return await sb.from("content_pieces").update({
         title: $("f-title").value.trim() || null,
         blog_excerpt: $("f-excerpt").value.trim() || null,
         linkedin_post: $("f-linkedin").value,
         blog_post: $("f-blog").value,
         twitter_thread: collectThread(),
       }).eq("id", currentId);
+    }
+    $("save").onclick = async () => {
+      if (!currentId) return;
+      const btn = $("save"); btn.disabled = true;
+      const { error } = await saveEdits();
       btn.disabled = false;
       if (error) { toast("Save failed: " + error.message); return; }
       const note = $("saved-note"); note.classList.remove("hidden");
       setTimeout(() => note.classList.add("hidden"), 1600);
+      if (currentPiece) currentPiece.title = $("f-title").value.trim() || null;
       loadHistory();
     };
 
@@ -363,6 +411,106 @@
     });
     $("copy-thread").onclick = () => {
       navigator.clipboard.writeText(collectThread().join("\n\n")); toast("Thread copied.");
+    };
+
+    // ---- Blog markdown preview ---------------------------------------------
+    function showBlogEdit() {
+      $("f-blog").classList.remove("hidden");
+      $("blog-preview").classList.add("hidden");
+      $("blog-toggle").textContent = "Preview";
+    }
+    $("blog-toggle").onclick = () => {
+      const ta = $("f-blog"), pv = $("blog-preview");
+      if (pv.classList.contains("hidden")) {
+        pv.innerHTML = DOMPurify.sanitize(marked.parse(ta.value || ""));
+        ta.classList.add("hidden"); pv.classList.remove("hidden");
+        $("blog-toggle").textContent = "Edit";
+      } else { showBlogEdit(); }
+    };
+
+    // ---- Publish / X actions ------------------------------------------------
+    function renderActions(p) {
+      const published = p.status === "published";
+      $("pub-status").textContent = published ? "Live" : "Draft";
+      $("pub-status").style.color = published ? "var(--go)" : "var(--muted)";
+      $("publish-btn").textContent = published ? "Update live post" : "Publish to blog";
+      $("unpublish-btn").style.display = published ? "" : "none";
+      const live = $("view-live");
+      if (published && p.blog_slug) {
+        live.href = "/blog/post.html?slug=" + encodeURIComponent(p.blog_slug);
+        live.classList.remove("hidden");
+      } else live.classList.add("hidden");
+
+      const posted = !!p.twitter_posted_at;
+      const xbtn = $("postx-btn"), viewx = $("view-x");
+      xbtn.disabled = posted;
+      xbtn.textContent = posted ? "Posted to X ✓" : "Post thread to X";
+      if (posted && p.twitter_thread_url) { viewx.href = p.twitter_thread_url; viewx.classList.remove("hidden"); }
+      else viewx.classList.add("hidden");
+    }
+
+    function slugify(s) {
+      const base = (s || "").toLowerCase().trim()
+        .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+      return base || "post";
+    }
+    const rand = () => Math.random().toString(36).slice(2, 6);
+
+    $("publish-btn").onclick = async () => {
+      if (!currentId) return;
+      const btn = $("publish-btn"); btn.disabled = true;
+      const { error: saveErr } = await saveEdits();
+      if (saveErr) { toast("Couldn't save: " + saveErr.message); btn.disabled = false; return; }
+
+      const slug = currentPiece?.blog_slug || slugify($("f-title").value);
+      const publishedAt = currentPiece?.blog_published_at || new Date().toISOString();
+      const patch = { status: "published", blog_slug: slug, blog_published_at: publishedAt };
+
+      let { error } = await sb.from("content_pieces").update(patch).eq("id", currentId);
+      if (error && error.code === "23505") {            // slug already taken
+        patch.blog_slug = slug + "-" + rand();
+        ({ error } = await sb.from("content_pieces").update(patch).eq("id", currentId));
+      }
+      btn.disabled = false;
+      if (error) { toast("Publish failed: " + error.message); return; }
+      toast("Published.");
+      await openPiece(currentId);
+      loadHistory();
+    };
+
+    $("unpublish-btn").onclick = async () => {
+      if (!currentId) return;
+      const { error } = await sb.from("content_pieces").update({ status: "draft" }).eq("id", currentId);
+      if (error) { toast("Failed: " + error.message); return; }
+      toast("Unpublished.");
+      await openPiece(currentId);
+      loadHistory();
+    };
+
+    $("postx-btn").onclick = async () => {
+      if (!currentId) return;
+      if (currentPiece?.twitter_posted_at) { toast("Already posted."); return; }
+      if (!confirm("Post this thread to X now? This can't be undone.")) return;
+      const btn = $("postx-btn"), status = $("x-status");
+      const { error: saveErr } = await saveEdits();
+      if (saveErr) { toast("Couldn't save first: " + saveErr.message); return; }
+      btn.disabled = true; status.innerHTML = '<span class="spinner"></span> Posting…';
+      try {
+        const { data, error } = await sb.functions.invoke("post-tweet", { body: { content_piece_id: currentId } });
+        if (error) {
+          let msg = error.message;
+          try { const ctx = await error.context?.json?.(); if (ctx?.error) msg = ctx.error; } catch {}
+          throw new Error(msg);
+        }
+        if (!data?.ok) throw new Error(data?.error || "Posting failed.");
+        toast("Posted to X.");
+        await openPiece(currentId);
+      } catch (e) {
+        toast(e.message || "Posting failed.");
+        btn.disabled = false;
+      } finally {
+        status.textContent = "";
+      }
     };
 
     // ---- History ------------------------------------------------------------

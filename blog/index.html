@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blog — FlyHire Connections</title>
+  <meta name="description" content="Notes on managed offshore operations, AI-augmented teams, and running a tighter back office — from FlyHire Connections." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #070C18; --accent: #2E90FF; --blue-text: #6FB4FF; --amber: #E8912A;
+      --glass: rgba(224,236,255,0.04); --glass-border: rgba(224,236,255,0.10); --glass-border-hover: rgba(224,236,255,0.22);
+      --white: #EAF0FA; --text: #93A1BC; --muted: #56617C;
+      --font: 'Inter', system-ui, sans-serif; --display: 'Fraunces', Georgia, serif; --mono: 'IBM Plex Mono', monospace;
+      --max: 880px; --nav-h: 68px;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    a { color: var(--accent); text-decoration: none; }
+    nav { height: var(--nav-h); border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; background: rgba(7,12,24,0.85); backdrop-filter: blur(10px); z-index: 10; }
+    .nav-inner { max-width: var(--max); margin: 0 auto; height: 100%; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; }
+    .nav-inner img { height: 42px; }
+    .nav-inner .back { font-size: 14px; color: var(--text); }
+    .nav-inner .back:hover { color: var(--white); }
+    main { max-width: var(--max); margin: 0 auto; padding: 72px 24px 120px; }
+    .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
+    h1.page { font-family: var(--display); font-weight: 500; color: var(--white); font-size: clamp(36px, 6vw, 56px); line-height: 1.05; margin-bottom: 16px; }
+    .lead { font-size: 18px; max-width: 60ch; margin-bottom: 56px; }
+    .posts { display: flex; flex-direction: column; gap: 2px; }
+    .post-card { display: block; padding: 28px 0; border-top: 1px solid var(--glass-border); transition: border-color .2s; }
+    .post-card:hover { border-color: var(--glass-border-hover); }
+    .post-card:hover h2 { color: var(--blue-text); }
+    .post-card .date { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+    .post-card h2 { font-family: var(--display); font-weight: 500; color: var(--white); font-size: 26px; line-height: 1.2; margin-bottom: 8px; transition: color .2s; }
+    .post-card p { color: var(--text); font-size: 15px; max-width: 65ch; }
+    .empty, .loading { padding: 40px 0; color: var(--muted); }
+    footer { border-top: 1px solid var(--glass-border); padding: 40px 24px; text-align: center; font-size: 13px; color: var(--muted); }
+    footer a { color: var(--text); }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-inner">
+      <a href="/"><img src="/assets/FlyHire Logo Dark.png" alt="FlyHire Connections" /></a>
+      <a href="/" class="back">← Back to site</a>
+    </div>
+  </nav>
+
+  <main>
+    <div class="eyebrow">FlyHire Journal</div>
+    <h1 class="page">Notes on running a tighter operation.</h1>
+    <p class="lead">Field notes on managed offshore operations, AI-augmented teams, and the unglamorous systems that actually move the needle for small businesses.</p>
+    <div class="posts" id="posts"><div class="loading">Loading…</div></div>
+  </main>
+
+  <footer>
+    <p>FlyHire Connections — managed offshore operations for U.S. small businesses. <a href="/">Home</a></p>
+  </footer>
+
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+    const sb = createClient(
+      "https://relbhhyqbzvpnxnbochs.supabase.co",
+      "sb_publishable_AG6gO-tQyKMpWMio286SnQ_8GZ3JNe7"
+    );
+    const wrap = document.getElementById("posts");
+    const fmt = (d) => new Date(d).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+    const esc = (s) => (s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+    (async () => {
+      const { data, error } = await sb
+        .from("public_posts")
+        .select("blog_slug,title,blog_excerpt,blog_published_at")
+        .order("blog_published_at", { ascending: false });
+      if (error) { wrap.innerHTML = `<div class="empty">Couldn't load posts right now.</div>`; return; }
+      if (!data || !data.length) { wrap.innerHTML = `<div class="empty">No posts yet — check back soon.</div>`; return; }
+      wrap.innerHTML = data.map((p) => `
+        <a class="post-card" href="/blog/post.html?slug=${encodeURIComponent(p.blog_slug)}">
+          <div class="date">${p.blog_published_at ? fmt(p.blog_published_at) : ""}</div>
+          <h2>${esc(p.title) || "Untitled"}</h2>
+          <p>${esc(p.blog_excerpt)}</p>
+        </a>`).join("");
+    })();
+  </script>
+</body>
+</html>
