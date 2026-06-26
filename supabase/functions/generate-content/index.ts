@@ -64,6 +64,20 @@ async function fetchYoutubeTranscript(url: string): Promise<string> {
   return text;
 }
 
+// --- Em-dash strip ----------------------------------------------------------
+// The em-dash is the model's most stubborn AI tell; a prompt rule alone doesn't
+// reliably kill it. This guarantees none survive by swapping any that slip
+// through for a comma (the safe default for parenthetical/appositive dashes).
+// En-dashes are left alone on purpose so number ranges like "7–14 days" survive.
+function stripEmDashes(s: string): string {
+  if (typeof s !== "string") return s;
+  return s
+    .replace(/\s*—\s*/g, ", ")       // — (em dash), spaced or not -> comma
+    .replace(/ ,/g, ",")                  // tidy " ," -> ","
+    .replace(/,\s*,/g, ",")               // collapse ", ," -> ","
+    .replace(/,(\s*[.;:!?])/g, "$1");     // ", ." / ", ;" -> ".", ";"
+}
+
 // --- Claude generation ------------------------------------------------------
 const OUTPUT_SCHEMA = {
   type: "object",
@@ -208,9 +222,9 @@ Deno.serve(async (req) => {
     return json({ ok: false, error: (e as Error).message }, 502);
   }
 
-  const thread = Array.isArray(drafts.twitter_thread)
+  const thread = (Array.isArray(drafts.twitter_thread)
     ? drafts.twitter_thread.filter((t: unknown) => typeof t === "string" && t.trim() !== "")
-    : [];
+    : []).map((t: string) => stripEmDashes(t));
 
   // --- Save (RLS enforces owner-only via the caller's JWT) -------------------
   const { data: inserted, error: dbError } = await supabase
@@ -219,10 +233,10 @@ Deno.serve(async (req) => {
       source_type: sourceType,
       source_url: sourceType === "youtube" ? sourceUrl : null,
       source_text: sourceText,
-      title: drafts.title ?? null,
-      blog_excerpt: drafts.blog_excerpt ?? null,
-      blog_post: drafts.blog_post ?? null,
-      linkedin_post: drafts.linkedin_post ?? null,
+      title: drafts.title ? stripEmDashes(drafts.title) : null,
+      blog_excerpt: drafts.blog_excerpt ? stripEmDashes(drafts.blog_excerpt) : null,
+      blog_post: drafts.blog_post ? stripEmDashes(drafts.blog_post) : null,
+      linkedin_post: drafts.linkedin_post ? stripEmDashes(drafts.linkedin_post) : null,
       twitter_thread: thread,
     })
     .select()
