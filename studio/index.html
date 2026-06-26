@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>FlyHire Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #070C18;
+      --panel: rgba(224,236,255,0.04);
+      --panel-2: rgba(224,236,255,0.06);
+      --border: rgba(224,236,255,0.12);
+      --border-hover: rgba(224,236,255,0.22);
+      --accent: #2E90FF;
+      --accent-soft: rgba(46,144,255,0.14);
+      --amber: #E8912A;
+      --go: #5FD08B;
+      --white: #EAF0FA;
+      --text: #93A1BC;
+      --muted: #56617C;
+      --font: 'Inter', system-ui, sans-serif;
+      --display: 'Fraunces', Georgia, serif;
+      --mono: 'IBM Plex Mono', ui-monospace, monospace;
+      --radius: 12px;
+    }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      background: var(--bg); color: var(--text); font-family: var(--font);
+      line-height: 1.55; -webkit-font-smoothing: antialiased; min-height: 100vh;
+    }
+    a { color: var(--accent); }
+    .mono { font-family: var(--mono); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+    button {
+      font-family: var(--font); font-size: 14px; font-weight: 600; cursor: pointer;
+      border: 1px solid var(--border); background: var(--panel-2); color: var(--white);
+      padding: 10px 16px; border-radius: 10px; transition: border-color .15s, background .15s, opacity .15s;
+    }
+    button:hover { border-color: var(--border-hover); background: var(--panel); }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    button.primary { background: var(--accent); border-color: var(--accent); color: #03101f; }
+    button.primary:hover { background: #4aa0ff; }
+    button.ghost { background: transparent; }
+    input[type=text], input[type=url], textarea {
+      width: 100%; font-family: var(--font); font-size: 15px; color: var(--white);
+      background: rgba(7,12,24,0.6); border: 1px solid var(--border); border-radius: 10px;
+      padding: 12px 14px; resize: vertical;
+    }
+    input:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+    textarea { line-height: 1.55; }
+
+    /* Login / gate */
+    .center { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 40px; max-width: 420px; width: 100%; text-align: center; }
+    .card h1 { font-family: var(--display); font-weight: 500; color: var(--white); font-size: 28px; margin-bottom: 8px; }
+    .card p { font-size: 14px; margin-bottom: 24px; }
+    .gbtn { display: inline-flex; align-items: center; gap: 10px; background: #fff; color: #1a2233; border: none; width: 100%; justify-content: center; padding: 12px; font-size: 15px; }
+    .gbtn:hover { background: #f2f4f8; }
+    .err { color: #ff8b8b; font-size: 13px; margin-top: 14px; min-height: 18px; }
+
+    /* App */
+    header.bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 28px; border-bottom: 1px solid var(--border); position: sticky; top: 0;
+      background: rgba(7,12,24,0.85); backdrop-filter: blur(10px); z-index: 5;
+    }
+    header.bar .brand { font-family: var(--display); font-weight: 500; color: var(--white); font-size: 20px; }
+    header.bar .brand span { color: var(--accent); }
+    header.bar .who { font-size: 13px; display: flex; align-items: center; gap: 14px; }
+    main { max-width: 1180px; margin: 0 auto; padding: 28px; display: grid; grid-template-columns: 280px 1fr; gap: 28px; align-items: start; }
+    @media (max-width: 880px) { main { grid-template-columns: 1fr; } }
+
+    .section-title { font-family: var(--display); color: var(--white); font-size: 22px; font-weight: 500; margin-bottom: 4px; }
+    .hint { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+
+    /* Sidebar history */
+    aside { position: sticky; top: 92px; }
+    .hist { display: flex; flex-direction: column; gap: 8px; max-height: 70vh; overflow-y: auto; }
+    .hist-item { text-align: left; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--panel); cursor: pointer; }
+    .hist-item:hover { border-color: var(--border-hover); }
+    .hist-item.active { border-color: var(--accent); background: var(--accent-soft); }
+    .hist-item .t { color: var(--white); font-size: 14px; font-weight: 600; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .hist-item .d { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+
+    /* Input card */
+    .block { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 22px; }
+    .tabs { display: inline-flex; gap: 6px; background: rgba(7,12,24,0.5); padding: 4px; border-radius: 10px; margin-bottom: 16px; }
+    .tab { padding: 7px 14px; border-radius: 7px; font-size: 13px; font-weight: 600; color: var(--text); background: transparent; border: none; }
+    .tab.active { background: var(--accent-soft); color: var(--white); }
+    .row-actions { display: flex; gap: 10px; align-items: center; margin-top: 14px; }
+    .spinner { width: 16px; height: 16px; border: 2px solid var(--accent-soft); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Output panels */
+    .out-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .out-head h3 { font-size: 15px; color: var(--white); font-weight: 600; }
+    .tag { font-family: var(--mono); font-size: 10px; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); }
+    .copy { font-size: 12px; padding: 6px 10px; }
+    .tweet { position: relative; margin-bottom: 10px; }
+    .tweet .count { position: absolute; right: 10px; bottom: 8px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+    .tweet .count.over { color: #ff8b8b; }
+    .tweet-actions { display: flex; gap: 8px; margin-bottom: 14px; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; margin-bottom: 6px; }
+    .save-bar { position: sticky; bottom: 0; background: rgba(7,12,24,0.92); backdrop-filter: blur(8px); border-top: 1px solid var(--border); padding: 14px 0; display: flex; gap: 12px; align-items: center; margin-top: 8px; }
+    .saved-note { font-size: 13px; color: var(--go); }
+    .hidden { display: none !important; }
+    .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--panel-2); border: 1px solid var(--border-hover); color: var(--white); padding: 10px 16px; border-radius: 10px; font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <!-- LOGIN / GATE -->
+  <div id="gate" class="center">
+    <div class="card">
+      <h1>FlyHire <span style="color:var(--accent)">Studio</span></h1>
+      <p id="gate-msg">Private content command center. Sign in to continue.</p>
+      <button class="gbtn" id="google-btn">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72A5.4 5.4 0 0 1 3.68 9c0-.6.1-1.18.29-1.72V4.95H.96A9 9 0 0 0 0 9c0 1.45.35 2.82.96 4.05l3.01-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>
+        Sign in with Google
+      </button>
+      <div class="err" id="gate-err"></div>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="app" class="hidden">
+    <header class="bar">
+      <div class="brand">FlyHire <span>Studio</span></div>
+      <div class="who">
+        <span id="who-email" class="mono"></span>
+        <button class="ghost" id="signout">Sign out</button>
+      </div>
+    </header>
+
+    <main>
+      <aside>
+        <div class="mono" style="margin-bottom:10px">History</div>
+        <div class="hist" id="history"><div class="hint">Nothing yet.</div></div>
+      </aside>
+
+      <section>
+        <!-- INPUT -->
+        <div class="block">
+          <div class="section-title">New content</div>
+          <p class="hint">Drop a YouTube link or brain-dump some thoughts. The studio turns it into a LinkedIn post, a blog post, and a Twitter thread.</p>
+          <div class="tabs">
+            <button class="tab active" data-mode="braindump">Brain-dump</button>
+            <button class="tab" data-mode="youtube">YouTube link</button>
+          </div>
+          <div id="in-braindump">
+            <textarea id="braindump" rows="6" placeholder="Talk it out — an idea, a lesson, a client story, a hot take…"></textarea>
+          </div>
+          <div id="in-youtube" class="hidden">
+            <input type="url" id="yturl" placeholder="https://www.youtube.com/watch?v=…" />
+          </div>
+          <div class="row-actions">
+            <button class="primary" id="generate">Generate</button>
+            <span id="gen-status" class="hint" style="margin:0"></span>
+          </div>
+        </div>
+
+        <!-- OUTPUT -->
+        <div id="output" class="hidden">
+          <div class="field">
+            <label class="mono">Title</label>
+            <input type="text" id="f-title" />
+          </div>
+          <div class="field">
+            <label class="mono">Blog excerpt</label>
+            <textarea id="f-excerpt" rows="2"></textarea>
+          </div>
+
+          <div class="block">
+            <div class="out-head"><h3>LinkedIn post</h3><button class="copy" data-copy="f-linkedin">Copy</button></div>
+            <textarea id="f-linkedin" rows="9"></textarea>
+          </div>
+
+          <div class="block">
+            <div class="out-head"><h3>Blog post <span class="tag">markdown</span></h3><button class="copy" data-copy="f-blog">Copy</button></div>
+            <textarea id="f-blog" rows="16"></textarea>
+          </div>
+
+          <div class="block">
+            <div class="out-head"><h3>Twitter / X thread</h3><button class="copy" id="copy-thread">Copy all</button></div>
+            <div id="thread"></div>
+            <div class="tweet-actions"><button class="ghost" id="add-tweet">+ Add tweet</button></div>
+          </div>
+
+          <div class="save-bar">
+            <button class="primary" id="save">Save changes</button>
+            <span class="saved-note hidden" id="saved-note">Saved ✓</span>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+    const SUPABASE_URL = "https://relbhhyqbzvpnxnbochs.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_AG6gO-tQyKMpWMio286SnQ_8GZ3JNe7";
+    const OWNER_EMAIL = "zanehaug@gmail.com";
+
+    const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const $ = (id) => document.getElementById(id);
+    const gate = $("gate"), app = $("app");
+    let currentId = null;   // the content_pieces row being edited
+    let mode = "braindump";
+
+    function toast(msg) {
+      const t = $("toast"); t.textContent = msg; t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 1800);
+    }
+
+    // ---- Auth gate ----------------------------------------------------------
+    async function refreshAuth() {
+      const { data: { session } } = await sb.auth.getSession();
+      const email = session?.user?.email?.toLowerCase();
+      if (!session) { showGate(); return; }
+      if (email !== OWNER_EMAIL) {
+        showGate(`Signed in as ${email}, which isn't authorized. Use the owner account.`, true);
+        return;
+      }
+      $("who-email").textContent = email;
+      gate.classList.add("hidden");
+      app.classList.remove("hidden");
+      loadHistory();
+    }
+    function showGate(msg, signedIn = false) {
+      app.classList.add("hidden");
+      gate.classList.remove("hidden");
+      if (msg) $("gate-err").textContent = msg;
+      $("gate-msg").textContent = signedIn
+        ? "Wrong account."
+        : "Private content command center. Sign in to continue.";
+    }
+
+    $("google-btn").onclick = async () => {
+      $("gate-err").textContent = "";
+      const { error } = await sb.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: window.location.origin + window.location.pathname },
+      });
+      if (error) $("gate-err").textContent = error.message;
+    };
+    $("signout").onclick = async () => { await sb.auth.signOut(); showGate(); };
+    sb.auth.onAuthStateChange(() => refreshAuth());
+
+    // ---- Input tabs ---------------------------------------------------------
+    document.querySelectorAll(".tab").forEach((t) => {
+      t.onclick = () => {
+        mode = t.dataset.mode;
+        document.querySelectorAll(".tab").forEach((x) => x.classList.toggle("active", x === t));
+        $("in-braindump").classList.toggle("hidden", mode !== "braindump");
+        $("in-youtube").classList.toggle("hidden", mode !== "youtube");
+      };
+    });
+
+    // ---- Generate -----------------------------------------------------------
+    $("generate").onclick = async () => {
+      const btn = $("generate"); const status = $("gen-status");
+      const payload = { source_type: mode };
+      if (mode === "youtube") {
+        const url = $("yturl").value.trim();
+        if (!url) { toast("Paste a YouTube URL first."); return; }
+        payload.source_url = url;
+      } else {
+        const text = $("braindump").value.trim();
+        if (!text) { toast("Write something first."); return; }
+        payload.source_text = text;
+      }
+      btn.disabled = true;
+      status.innerHTML = '<span class="spinner"></span> Generating… this can take ~20–40s';
+      try {
+        const { data, error } = await sb.functions.invoke("generate-content", { body: payload });
+        if (error) {
+          // functions.invoke surfaces non-2xx as an error; try to read the body
+          let msg = error.message;
+          try { const ctx = await error.context?.json?.(); if (ctx?.error) msg = ctx.error; } catch {}
+          throw new Error(msg);
+        }
+        if (!data?.ok) throw new Error(data?.error || "Generation failed.");
+        loadPiece(data.piece);
+        loadHistory();
+        toast("Drafts ready.");
+      } catch (e) {
+        toast(e.message || "Something went wrong.");
+      } finally {
+        btn.disabled = false; status.textContent = "";
+      }
+    };
+
+    // ---- Load a piece into the editor --------------------------------------
+    function loadPiece(p) {
+      currentId = p.id;
+      $("output").classList.remove("hidden");
+      $("f-title").value = p.title ?? "";
+      $("f-excerpt").value = p.blog_excerpt ?? "";
+      $("f-linkedin").value = p.linkedin_post ?? "";
+      $("f-blog").value = p.blog_post ?? "";
+      renderThread(Array.isArray(p.twitter_thread) ? p.twitter_thread : []);
+      markActiveHistory();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function renderThread(tweets) {
+      const wrap = $("thread"); wrap.innerHTML = "";
+      (tweets.length ? tweets : [""]).forEach((tw) => addTweetEl(tw));
+    }
+    function addTweetEl(value = "") {
+      const div = document.createElement("div");
+      div.className = "tweet";
+      const ta = document.createElement("textarea");
+      ta.rows = 3; ta.value = value;
+      const count = document.createElement("span");
+      count.className = "count";
+      const upd = () => {
+        const n = ta.value.length;
+        count.textContent = `${n}/280`;
+        count.classList.toggle("over", n > 280);
+      };
+      ta.addEventListener("input", upd); upd();
+      div.appendChild(ta); div.appendChild(count);
+      $("thread").appendChild(div);
+    }
+    $("add-tweet").onclick = () => addTweetEl("");
+
+    function collectThread() {
+      return Array.from(document.querySelectorAll("#thread textarea"))
+        .map((ta) => ta.value.trim()).filter(Boolean);
+    }
+
+    // ---- Save ---------------------------------------------------------------
+    $("save").onclick = async () => {
+      if (!currentId) return;
+      const btn = $("save"); btn.disabled = true;
+      const { error } = await sb.from("content_pieces").update({
+        title: $("f-title").value.trim() || null,
+        blog_excerpt: $("f-excerpt").value.trim() || null,
+        linkedin_post: $("f-linkedin").value,
+        blog_post: $("f-blog").value,
+        twitter_thread: collectThread(),
+      }).eq("id", currentId);
+      btn.disabled = false;
+      if (error) { toast("Save failed: " + error.message); return; }
+      const note = $("saved-note"); note.classList.remove("hidden");
+      setTimeout(() => note.classList.add("hidden"), 1600);
+      loadHistory();
+    };
+
+    // ---- Copy buttons -------------------------------------------------------
+    document.querySelectorAll(".copy[data-copy]").forEach((b) => {
+      b.onclick = () => { navigator.clipboard.writeText($(b.dataset.copy).value); toast("Copied."); };
+    });
+    $("copy-thread").onclick = () => {
+      navigator.clipboard.writeText(collectThread().join("\n\n")); toast("Thread copied.");
+    };
+
+    // ---- History ------------------------------------------------------------
+    async function loadHistory() {
+      const { data, error } = await sb.from("content_pieces")
+        .select("id,title,created_at,status").order("created_at", { ascending: false }).limit(50);
+      const wrap = $("history");
+      if (error) { wrap.innerHTML = `<div class="hint">${error.message}</div>`; return; }
+      if (!data.length) { wrap.innerHTML = '<div class="hint">Nothing yet.</div>'; return; }
+      wrap.innerHTML = "";
+      data.forEach((p) => {
+        const el = document.createElement("button");
+        el.className = "hist-item" + (p.id === currentId ? " active" : "");
+        el.dataset.id = p.id;
+        const date = new Date(p.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+        el.innerHTML = `<span class="t">${(p.title || "Untitled").replace(/</g,"&lt;")}</span><span class="d">${date}${p.status === "published" ? " · live" : ""}</span>`;
+        el.onclick = () => openPiece(p.id);
+        wrap.appendChild(el);
+      });
+    }
+    function markActiveHistory() {
+      document.querySelectorAll(".hist-item").forEach((el) =>
+        el.classList.toggle("active", el.dataset.id === currentId));
+    }
+    async function openPiece(id) {
+      const { data, error } = await sb.from("content_pieces").select("*").eq("id", id).single();
+      if (error) { toast(error.message); return; }
+      loadPiece(data);
+    }
+
+    // ---- Go -----------------------------------------------------------------
+    refreshAuth();
+  </script>
+</body>
+</html>
